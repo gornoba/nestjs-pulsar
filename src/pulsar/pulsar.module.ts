@@ -3,6 +3,7 @@ import { PULSAR_CLIENT } from './pulsar.constants';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Client } from 'pulsar-client';
 import { PulsarProducerService } from './pulsar-producer.service';
+import { PulsarClientService } from './pulsar-client.service';
 
 @Module({
   imports: [ConfigModule],
@@ -10,13 +11,14 @@ import { PulsarProducerService } from './pulsar-producer.service';
     {
       provide: PULSAR_CLIENT,
       useFactory: (configService: ConfigService) => {
-        new Client({
+        return new Client({
           serviceUrl: configService.getOrThrow('PULSAR_SERVICE_URL'),
         });
       },
       inject: [ConfigService],
     },
     PulsarProducerService,
+    PulsarClientService,
   ],
   exports: [PulsarProducerService, PULSAR_CLIENT],
 })

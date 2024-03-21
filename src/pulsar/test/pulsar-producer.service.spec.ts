@@ -61,6 +61,4 @@ describe('PulsarProducerService', () => {
       expect(sentMessageData).toEqual(message); // 변환된 데이터와 예상 메시지 비교
     });
   });
-
-  it.todo('produce');
 });

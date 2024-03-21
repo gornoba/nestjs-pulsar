@@ -67,42 +67,40 @@
   </tr>
 </table>
 
-## Running the app
+## Describe
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+- Pulsar는 아직까지 NestJS 공식문서에서 지원해주지 않고 있어서 Michael Guay은 Pulsar를 사용할 수 있는 방법을 알려준다.
+- 우선 관련사이트에서 docker-compose를 작성하고 pulsar-client를 설치한다.
+- 구성
+  - Pulsar Client
+    - pulsar.module에 provider로 생성되어 있다.
+  - Producer
+    - pulsar-producer.service에 구성되어 있다.
+    - createProducer를 사용하여 producer 객체를 생성하고 send로 메세지를 전송한다.
+  - Consumer
+    - pulsar-producer.service abstract class로 생성되어 있다.
+    - 상속받는 class는 module이 init되면 메시지를 subscribe 한다.
+    - 이벤트 루프가 끝나는 시점에 consume 함수를 실행하여 해당 메세지를 ack한다.
+- Test
+  - Rest API
+    - app.controller에서 message를 Post 요청을 통해 받는다.
+  - Producer
+    - app.service에서 message를 생산한다.
+    - 이때 topic을 같이 전달한다. ex) persistent://public/default/test
+      - 토픽의 유형: persistent/non-persistent
+      - Tenant: 사용자 그룹을 의미하며, 최상위 분류 단위
+      - Namespace: 테넌트 내에서 토픽을 더 세분화하여 그룹화하는 데 사용. 토픽에 대한 정책을 설정 가능
+      - name: 네임스페이스 내에서 고유해야 하며, 특정 통신 채널 또는 데이터 스트림
+  - Consumer
+    - app.consumer에 생성되어 있다.
+    - pulsar-producer.service에서 config에 topic과 subscription을 기재한다.
+    - module이 init 될때 connect
+  - Test
+    - localhost:3000으로 메세지를 보내면 log에 생산된 메시지가 소비되는 것이 보인다.
+- 후기
+  - pulsar module 부분을 mono repo라면 lib쪽에 빼놔서 하는 것도 좋을 것이라 생각되었다.
+  - handleMessage 부분에 응답을 받는다면 그와 관련된 코드를 제작할 필요가 있다고 생각되었다.
+    - 요청 메시지에 고유 식별자 포함하여 생산
+    - 소비자는 메세지를 처리하고 응답 메세지를 응답 토픽으로 생산
+    - 응답 토픽에서 메시지를 소비
+  - 이렇게 복잡한 경우는 어떻게 테스트코드를 작성해야하나 고민..
